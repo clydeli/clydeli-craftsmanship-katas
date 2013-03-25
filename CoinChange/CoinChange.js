@@ -19,24 +19,28 @@ CoinChange = {
 	},
 
 	addCoin : function(amount, coinCountArray, coinCount){
-		
-		if(this.patternHash.hasOwnProperty(JSON.stringify(coinCountArray) ) ){ return false; }
-		if(coinCount >= this.minCoinCount || amount < 0){ return false; }
-	
-		if( amount === 0 ){
-			this.minCoinCount = coinCount;
-			this.minCoinCountArray = coinCountArray.slice();
-		} else {
+		// filter by constraints
+		if( 
+			this.patternHash.hasOwnProperty(JSON.stringify(coinCountArray) )
+			|| coinCount + amount/this.coinValueArray[this.coinValueArray.length-1] > this.minCoinCount
+			|| amount < 0
+		) { return false; }
+			
+		// if not yet an answer 
+		if(amount !== 0) {
 			this.patternHash[JSON.stringify(coinCountArray)] = true;
 			for(var i=this.coinValueArray.length-1; i>=0; --i){
-				coinCountArray[i]++;
+				++coinCountArray[i];
 				this.addCoin(
 					amount-this.coinValueArray[i],
 					coinCountArray,
 					coinCount+1
 				);
-				coinCountArray[i]--;
+				--coinCountArray[i];
 			}
+		} else {
+			this.minCoinCount = coinCount;
+			this.minCoinCountArray = coinCountArray.slice();
 		}
 	}
 
